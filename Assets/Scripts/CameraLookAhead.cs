@@ -15,6 +15,7 @@ public class CameraLookAhead : MonoBehaviour
         {
             Debug.LogError("Player or Virtual Camera is not assigned!");
             enabled = false;
+            return;
         }
 
         previousPosition = player.position;
@@ -22,6 +23,9 @@ public class CameraLookAhead : MonoBehaviour
 
     private void LateUpdate()
     {
+        if (GameManager.Instance != null && GameManager.Instance.IsPaused())
+            return;
+
         // Calculate movement direction
         Vector3 movementDirection = (player.position - previousPosition).normalized;
 
