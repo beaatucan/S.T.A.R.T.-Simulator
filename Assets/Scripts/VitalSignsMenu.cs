@@ -1,4 +1,5 @@
 using UnityEngine;
+using TMPro;
 using UnityEngine.UI;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,13 @@ public class VitalSignsMenu : MonoBehaviour
     [SerializeField] private Button continueButton;
     [SerializeField] private CanvasGroup menuCanvasGroup;
     [SerializeField] private ColorSelectionUI colorSelection;
+    [SerializeField] private GameObject menuPanel;
+
+    [Header("UI Text Elements")]
+    [SerializeField] private TextMeshProUGUI titleText;  // Add this field
+    [SerializeField] private TextMeshProUGUI descriptionText;  // Add this field
+    [SerializeField] private Transform vitalSignsContainer;  // Add this field
+    [SerializeField] private TextMeshProUGUI vitalSignTextPrefab;  // Add this field
 
     [Header("Feedback UI")]
     [SerializeField] private GameObject correctFeedback;
@@ -114,12 +122,38 @@ public class VitalSignsMenu : MonoBehaviour
         Hide();
     }
 
-    public void Show(InteractableSprite source)
+    public void Show(InteractableSprite interactable, string title, string description, string[] vitalSigns)
     {
         if (isOpen) return;
 
-        currentSource = source;
-        currentInteractable = source.GetComponent<VitalSignsInteractable>();
+        currentSource = interactable;
+        currentInteractable = interactable.GetComponent<VitalSignsInteractable>();
+        
+        // Update UI texts
+        if (titleText != null)
+            titleText.text = title;
+        if (descriptionText != null)
+            descriptionText.text = description;
+
+        // Clear existing vital signs
+        if (vitalSignsContainer != null)
+        {
+            foreach (Transform child in vitalSignsContainer)
+            {
+                Destroy(child.gameObject);
+            }
+
+            // Add new vital signs
+            if (vitalSignTextPrefab != null)
+            {
+                foreach (string vitalSign in vitalSigns)
+                {
+                    TextMeshProUGUI vitalSignText = Instantiate(vitalSignTextPrefab, vitalSignsContainer);
+                    vitalSignText.text = vitalSign;
+                }
+            }
+        }
+
         Debug.Log("Showing Vitals Menu");
         isOpen = true;
         ShowMenuCanvas();

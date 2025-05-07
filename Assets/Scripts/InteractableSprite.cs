@@ -7,6 +7,10 @@ public class InteractableSprite : MonoBehaviour, IInteractable
     [SerializeField] private TextMeshProUGUI interactPrompt;
     [SerializeField] private string promptText = "Press E to interact";
     [SerializeField] private Color assignedColor;
+    
+    [Header("Patient Details")]
+    [SerializeField] private PatientInformation patientInfo;
+
     public Color AssignedColor => assignedColor;
 
     private bool _hasBeenInteracted = false;
@@ -16,14 +20,22 @@ public class InteractableSprite : MonoBehaviour, IInteractable
     private int correctAttempts = 0;
     private int incorrectAttempts = 0;
 
+    private void Start()
+    {
+        if (patientInfo == null)
+        {
+            patientInfo = GetComponent<PatientInformation>();
+        }
+    }
+
     public void Interact()
     {
         if (!canInteract || _hasBeenInteracted)
             return;
 
-        if (vitalSignsMenu != null)
+        if (vitalSignsMenu != null && patientInfo != null)
         {
-            vitalSignsMenu.Show(this);
+            vitalSignsMenu.Show(this, patientInfo.GetPatientName(), patientInfo.GetPatientDescription(), patientInfo.GetVitalSigns());
             _hasBeenInteracted = true;
         }
     }
