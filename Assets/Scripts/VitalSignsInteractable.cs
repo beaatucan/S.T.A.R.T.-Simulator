@@ -3,40 +3,58 @@ using TMPro;
 
 [RequireComponent(typeof(SpriteRenderer))]
 [RequireComponent(typeof(Collider2D))]
+[RequireComponent(typeof(InteractableSprite))]
 public class VitalSignsInteractable : MonoBehaviour, IInteractable
 {
     [SerializeField] private VitalSignsMenu menu;
     [SerializeField] private TextMeshProUGUI promptText;
-    [SerializeField] private GameObject promptObject;
+    [SerializeField] private GameObject popupBackground; // Reference to the popup background
     [SerializeField] private string interactionPrompt = "Press E to check vital signs";
 
     private bool canInteract = false;
+    private InteractableSprite interactableSprite;
+    private bool hasInteracted = false;
 
     private void Awake()
     {
-        // Ensure prompt is hidden at start
-        if (promptObject != null)
-            promptObject.SetActive(false);
-
         // Make sure the collider is set as trigger
         var collider = GetComponent<Collider2D>();
         if (collider != null)
             collider.isTrigger = true;
+
+        // Get reference to InteractableSprite
+        interactableSprite = GetComponent<InteractableSprite>();
+        
+        // Hide UI elements at start
+        HideUI();
     }
 
     private void Start()
     {
-        if (promptObject != null)
-            promptObject.SetActive(false);
-
-        // Make sure the collider is set as trigger
-        GetComponent<Collider2D>().isTrigger = true;
-
         // Verify menu reference
         if (menu == null)
         {
             Debug.LogError("VitalSignsMenu reference is missing on " + gameObject.name);
         }
+    }
+
+    private void HideUI()
+    {
+        if (promptText != null)
+            promptText.gameObject.SetActive(false);
+        if (popupBackground != null)
+            popupBackground.SetActive(false);
+    }
+
+    private void ShowUI()
+    {
+        if (promptText != null)
+        {
+            promptText.gameObject.SetActive(true);
+            promptText.text = interactionPrompt;
+        }
+        if (popupBackground != null)
+            popupBackground.SetActive(true);
     }
 
     public void Interact()
@@ -51,30 +69,25 @@ public class VitalSignsInteractable : MonoBehaviour, IInteractable
             return;
         }
 
-        menu.Show();
-        if (promptObject != null)
-            promptObject.SetActive(false);
+        menu.Show(interactableSprite);
+        HideUI(); // Hide the popup when interacting
     }
 
     public void OnPlayerApproach()
     {
+        // Check both local and InteractableSprite interaction states
+        if (hasInteracted || interactableSprite == null || interactableSprite.HasBeenInteracted || !enabled)
+            return;
+            
         Debug.Log("Player approached " + gameObject.name);
         canInteract = true;
-        
-        if (promptObject != null)
-        {
-            promptObject.SetActive(true);
-            if (promptText != null)
-                promptText.text = interactionPrompt;
-        }
+        ShowUI();
     }
 
     public void OnPlayerExit()
     {
         Debug.Log("Player exited " + gameObject.name);
         canInteract = false;
-        
-        if (promptObject != null)
-            promptObject.SetActive(false);
+        HideUI();
     }
 }

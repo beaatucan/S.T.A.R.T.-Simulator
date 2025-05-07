@@ -1,6 +1,5 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System;
 
 public class ColorSelectionUI : MonoBehaviour
@@ -14,12 +13,9 @@ public class ColorSelectionUI : MonoBehaviour
     }
 
     [SerializeField] private ColorOption[] colorOptions;
-    [SerializeField] private Image selectedIndicator;
-    [SerializeField] private TextMeshProUGUI selectedText;
     [SerializeField] private float selectedScale = 1.2f;
     
     private ColorOption currentSelection;
-    public event Action<Color> OnColorSelected;
 
     private void Start()
     {
@@ -49,16 +45,6 @@ public class ColorSelectionUI : MonoBehaviour
         // Update current selection
         currentSelection = option;
         currentSelection.button.transform.localScale = Vector3.one * selectedScale;
-
-        // Update UI
-        if (selectedText != null)
-            selectedText.text = $"{option.name} Selected";
-        
-        if (selectedIndicator != null)
-            selectedIndicator.color = option.color;
-
-        // Notify listeners
-        OnColorSelected?.Invoke(option.color);
     }
 
     public void ResetSelection()
@@ -68,12 +54,6 @@ public class ColorSelectionUI : MonoBehaviour
             currentSelection.button.transform.localScale = Vector3.one;
             currentSelection = null;
         }
-
-        if (selectedText != null)
-            selectedText.text = "No Color Selected";
-            
-        if (selectedIndicator != null)
-            selectedIndicator.color = Color.white;
     }
 
     public bool HasSelection()
