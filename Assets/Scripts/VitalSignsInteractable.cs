@@ -7,9 +7,22 @@ using TMPro;
 public class VitalSignsInteractable : MonoBehaviour, IInteractable
 {
     [SerializeField] private VitalSignsMenu menu;
+
+    [Header("Interaction UI")]
     [SerializeField] private TextMeshProUGUI promptText;
-    [SerializeField] private GameObject popupBackground; // Reference to the popup background
+    [SerializeField] private GameObject popupBackground;
     [SerializeField] private string interactionPrompt = "Press E to check vital signs";
+
+    [Header("Patient Information")]
+    [SerializeField] private string menuTitle = "Patient Status";
+    [SerializeField, TextArea(3, 10)] private string menuDescription = "Examine the patient's vital signs carefully.";
+    [SerializeField] private string[] vitalSigns = new string[] { 
+        "Blood Pressure: --/--",
+        "Heart Rate: -- bpm",
+        "Respiratory Rate: -- /min",
+        "Temperature: --°C",
+        "SpO2: --%"
+    };
 
     private bool canInteract = false;
     private InteractableSprite interactableSprite;
@@ -69,7 +82,7 @@ public class VitalSignsInteractable : MonoBehaviour, IInteractable
             return;
         }
 
-        menu.Show(interactableSprite);
+        menu.Show(interactableSprite, menuTitle, menuDescription, vitalSigns);
         HideUI(); // Hide the popup when interacting
     }
 
