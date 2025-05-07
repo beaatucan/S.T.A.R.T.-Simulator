@@ -1,25 +1,28 @@
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 using System;
+using System.Collections.Generic;
 
 public class VitalSignsMenu : MonoBehaviour
 {
     [Header("Components")]
-    [SerializeField] private ColorSelectionUI colorSelection;
-    [SerializeField] private VitalSignsInputValidator inputValidator;
     [SerializeField] private Button continueButton;
     [SerializeField] private CanvasGroup menuCanvasGroup;
+    [SerializeField] private ColorSelectionUI colorSelection;
 
-    [Header("Input Fields")]
-    [SerializeField] private TMP_InputField pulseInput;
-    [SerializeField] private TMP_InputField breathingInput;
+    [Header("Feedback UI")]
+    [SerializeField] private GameObject correctFeedback;
+    [SerializeField] private GameObject incorrectFeedback;
+    [SerializeField] private float feedbackDisplayTime = 1.5f;
 
-    public event Action<VitalSignsData> OnVitalSignsSubmitted;
+    private PlayerController playerController;
     private bool isOpen = false;
-    
+    private InteractableSprite currentSource;
+    private VitalSignsInteractable currentInteractable;
+
     private void Awake()
     {
+        playerController = FindFirstObjectByType<PlayerController>();
         InitializeComponents();
         SetInitialState();
     }
@@ -31,15 +34,6 @@ public class VitalSignsMenu : MonoBehaviour
 
     private void InitializeComponents()
     {
-        if (pulseInput != null)
-            pulseInput.onValueChanged.AddListener(_ => ValidateInputs());
-        
-        if (breathingInput != null)
-            breathingInput.onValueChanged.AddListener(_ => ValidateInputs());
-        
-        if (colorSelection != null)
-            colorSelection.OnColorSelected += _ => ValidateInputs();
-
         if (continueButton != null)
             continueButton.onClick.AddListener(HandleSubmit);
     }
@@ -54,66 +48,117 @@ public class VitalSignsMenu : MonoBehaviour
         }
         
         if (continueButton != null)
-            continueButton.interactable = false;
+            continueButton.interactable = true;
 
-        isOpen = false;
-    }
+        if (correctFeedback != null) correctFeedback.SetActive(false);
+        if (incorrectFeedback != null) incorrectFeedback.SetActive(false);
 
-    private void ValidateInputs()
-    {
-        bool isPulseValid = !string.IsNullOrEmpty(pulseInput?.text);
-        bool isBreathingValid = !string.IsNullOrEmpty(breathingInput?.text);
-        bool hasColorSelected = colorSelection != null && colorSelection.HasSelection();
-
-        if (continueButton != null)
-            continueButton.interactable = isPulseValid && isBreathingValid && hasColorSelected;
+        if (colorSelection != null)
+            colorSelection.ResetSelection();
     }
 
     private void HandleSubmit()
     {
-        if (!continueButton.interactable) return;
-
-        var data = new VitalSignsData
+        if (currentSource != null && colorSelection != null)
         {
-            Pulse = int.Parse(pulseInput.text),
-            Breathing = int.Parse(breathingInput.text),
-            SelectedColor = colorSelection.GetSelectedColor() ?? Color.white
-        };
+            Color? selectedColor = colorSelection.GetSelectedColor();
+            if (!selectedColor.HasValue)
+            {
+                Debug.Log("No color selected!");
+                return;
+            }
 
-        // First notify listeners
-        OnVitalSignsSubmitted?.Invoke(data);
+            bool isCorrect = ColorMatches(selectedColor.Value, currentSource.AssignedColor);
+            ShowFeedback(isCorrect);
+            StartCoroutine(HideAfterFeedback(isCorrect));
+            
+            // Disable the interactable
+            if (currentInteractable != null)
+            {
+                currentInteractable.enabled = false;
+            }
+        }
+        else
+        {
+            Hide();
+        }
+    }
 
-        // Then close menu
+    private void ShowFeedback(bool isCorrect)
+    {
+        if (isCorrect)
+        {
+            if (correctFeedback != null)
+            {
+                correctFeedback.SetActive(true);
+                incorrectFeedback?.SetActive(false);
+            }
+            ScoreManager.Instance?.IncrementCorrect();
+            Debug.Log("Correct color selected!");
+        }
+        else
+        {
+            if (incorrectFeedback != null)
+            {
+                incorrectFeedback.SetActive(true);
+                correctFeedback?.SetActive(false);
+            }
+            ScoreManager.Instance?.IncrementIncorrect();
+            Debug.Log("Incorrect color selected.");
+        }
+    }
+
+    private System.Collections.IEnumerator HideAfterFeedback(bool wasCorrect)
+    {
+        yield return new WaitForSeconds(feedbackDisplayTime);
         Hide();
     }
 
-    public void Show()
+    public void Show(InteractableSprite source)
     {
         if (isOpen) return;
 
+        currentSource = source;
+        currentInteractable = source.GetComponent<VitalSignsInteractable>();
         Debug.Log("Showing Vitals Menu");
         isOpen = true;
-
-        // Reset inputs first
-        ResetInputs();
-        
-        // Then show and enable canvas
         ShowMenuCanvas();
 
-        // Notify player to pause
+        if (colorSelection != null)
+            colorSelection.ResetSelection();
+
+        if (playerController != null)
+            playerController.DisableMovementInput();
+
         GameManager.Instance.SetPaused(true);
     }
 
-    private void ResetInputs()
+    public void Hide()
     {
-        if (pulseInput != null)
-            pulseInput.text = "";
-        if (breathingInput != null)
-            breathingInput.text = "";
+        if (!isOpen) return;
+
+        Debug.Log("Hiding Vitals Menu");
+        isOpen = false;
+
+        if (menuCanvasGroup != null)
+        {
+            menuCanvasGroup.alpha = 0f;
+            menuCanvasGroup.interactable = false;
+            menuCanvasGroup.blocksRaycasts = false;
+        }
+
+        if (correctFeedback != null) correctFeedback.SetActive(false);
+        if (incorrectFeedback != null) incorrectFeedback.SetActive(false);
+
         if (colorSelection != null)
             colorSelection.ResetSelection();
-        if (continueButton != null)
-            continueButton.interactable = false;
+
+        gameObject.SetActive(false);
+
+        if (playerController != null)
+            playerController.EnableMovementInput();
+
+        GameManager.Instance.SetPaused(false);
     }
 
     private void ShowMenuCanvas()
@@ -128,33 +173,13 @@ public class VitalSignsMenu : MonoBehaviour
         }
     }
 
-    public void Hide()
+    private bool ColorMatches(Color a, Color b)
     {
-        if (!isOpen) return;
-
-        Debug.Log("Hiding Vitals Menu");
-        isOpen = false;
-
-        // First hide the canvas
-        if (menuCanvasGroup != null)
-        {
-            menuCanvasGroup.alpha = 0f;
-            menuCanvasGroup.interactable = false;
-            menuCanvasGroup.blocksRaycasts = false;
-        }
-
-        // Then deactivate the GameObject
-        gameObject.SetActive(false);
-
-        // Finally unpause the game
-        GameManager.Instance.SetPaused(false);
+        // Compare colors with a small tolerance for floating-point differences
+        const float tolerance = 0.01f;
+        return Mathf.Abs(a.r - b.r) < tolerance &&
+               Mathf.Abs(a.g - b.g) < tolerance &&
+               Mathf.Abs(a.b - b.b) < tolerance &&
+               Mathf.Abs(a.a - b.a) < tolerance;
     }
-}
-
-[System.Serializable]
-public struct VitalSignsData
-{
-    public int Pulse;
-    public int Breathing;
-    public Color SelectedColor;
 }

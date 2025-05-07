@@ -6,8 +6,9 @@ using UnityEngine.Scripting.APIUpdating;
 public class PlayerController : MonoBehaviour, PlayerControls.IMovementActions
 {
     [SerializeField] private float moveSpeed = 1f;
-    [SerializeField] private float interactionRadius = 2f; // Detection radius for interactables
-    [SerializeField] private float minInteractionDistance = 1.5f; // Minimum distance required to interact
+    [SerializeField] private float interactionRadius = 0.3f; // Detection radius for interactables
+    [SerializeField] private float minInteractionDistance = 0.10f; // Minimum distance required to interact
+    [SerializeField] private GameObject interactCanvas; // Reference to the UI canvas for interaction prompts
 
     private PlayerControls playerControls;
     private Vector2 movement;
@@ -26,6 +27,10 @@ public class PlayerController : MonoBehaviour, PlayerControls.IMovementActions
         
         // Subscribe to input actions
         playerControls.Movement.SetCallbacks(this);
+
+        // Ensure interaction UI starts hidden
+        if (interactCanvas != null)
+            interactCanvas.SetActive(false);
     }
 
     private void OnEnable() {
@@ -168,6 +173,10 @@ public class PlayerController : MonoBehaviour, PlayerControls.IMovementActions
                 // Set and enter the new interactable
                 currentInteractable = closest;
                 currentInteractable.OnPlayerApproach();
+                
+                // Show interaction UI
+                if (interactCanvas != null)
+                    interactCanvas.SetActive(true);
             }
         }
         else
@@ -177,7 +186,23 @@ public class PlayerController : MonoBehaviour, PlayerControls.IMovementActions
             {
                 currentInteractable.OnPlayerExit();
                 currentInteractable = null;
+                
+                // Hide interaction UI
+                if (interactCanvas != null)
+                    interactCanvas.SetActive(false);
             }
         }
+    }
+
+    // Public methods to enable/disable movement input
+    public void EnableMovementInput()
+    {
+        playerControls.Movement.Move.Enable();
+    }
+
+    public void DisableMovementInput()
+    {
+        playerControls.Movement.Move.Disable();
+        movement = Vector2.zero; // Stop movement immediately
     }
 }
