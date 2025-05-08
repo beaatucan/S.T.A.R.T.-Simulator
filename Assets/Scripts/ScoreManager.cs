@@ -9,10 +9,9 @@ public class ScoreManager : MonoBehaviour
     [SerializeField] private TextMeshProUGUI incorrectCounterText;
     [SerializeField] private TextMeshProUGUI victimCounterText;
 
-    private int totalCorrect = 0;
-    private int totalIncorrect = 0;
+    private int correctCount = 0;
+    private int incorrectCount = 0;
     private int totalVictims = 0;
-    private int processedVictims = 0;
 
     private void Awake()
     {
@@ -30,7 +29,7 @@ public class ScoreManager : MonoBehaviour
     private void Start()
     {
         CountTotalVictims();
-        UpdateCounterDisplay();
+        UpdateUI();
     }
 
     private void CountTotalVictims()
@@ -42,35 +41,59 @@ public class ScoreManager : MonoBehaviour
 
     public void IncrementCorrect()
     {
-        totalCorrect++;
-        processedVictims++;
-        UpdateCounterDisplay();
+        correctCount++;
+        UpdateUI();
     }
 
     public void IncrementIncorrect()
     {
-        totalIncorrect++;
-        processedVictims++;
-        UpdateCounterDisplay();
+        incorrectCount++;
+        UpdateUI();
     }
 
-    private void UpdateCounterDisplay()
+    public void SetTotalVictims(int count)
+    {
+        totalVictims = count;
+        UpdateUI();
+    }
+
+    private void UpdateUI()
     {
         if (correctCounterText != null)
-            correctCounterText.text = $"Correct: {totalCorrect}";
+            correctCounterText.text = $"Correct: {correctCount}";
         if (incorrectCounterText != null)
-            incorrectCounterText.text = $"Incorrect: {totalIncorrect}";
+            incorrectCounterText.text = $"Incorrect: {incorrectCount}";
         if (victimCounterText != null)
-            victimCounterText.text = $"Victims: {processedVictims}/{totalVictims}";
+            victimCounterText.text = $"Victims Found: {correctCount + incorrectCount}/{totalVictims}";
+
+        // Check if all victims have been found
+        if (correctCount + incorrectCount >= totalVictims && totalVictims > 0)
+        {
+            // All victims have been processed, end the game
+            UnityEngine.SceneManagement.SceneManager.LoadScene("EndGame");
+        }
+    }
+
+    public (int correct, int incorrect, int total) GetScores()
+    {
+        return (correctCount, incorrectCount, totalVictims);
+    }
+
+    public void ResetScores()
+    {
+        correctCount = 0;
+        incorrectCount = 0;
+        totalVictims = 0;
+        UpdateUI();
     }
 
     // Called when loading a new level/scene
     public void ResetCounters()
     {
-        totalCorrect = 0;
-        totalIncorrect = 0;
-        processedVictims = 0;
+        correctCount = 0;
+        incorrectCount = 0;
+        totalVictims = 0;
         CountTotalVictims();
-        UpdateCounterDisplay();
+        UpdateUI();
     }
 }

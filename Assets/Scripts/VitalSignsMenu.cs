@@ -13,10 +13,10 @@ public class VitalSignsMenu : MonoBehaviour
     [SerializeField] private GameObject menuPanel;
 
     [Header("UI Text Elements")]
-    [SerializeField] private TextMeshProUGUI titleText;  // Add this field
-    [SerializeField] private TextMeshProUGUI descriptionText;  // Add this field
-    [SerializeField] private Transform vitalSignsContainer;  // Add this field
-    [SerializeField] private TextMeshProUGUI vitalSignTextPrefab;  // Add this field
+    [SerializeField] private TextMeshProUGUI titleText;
+    [SerializeField] private TextMeshProUGUI descriptionText;
+    [SerializeField] private Transform vitalSignsContainer;
+    [SerializeField] private TextMeshProUGUI vitalSignTextPrefab;
 
     [Header("Feedback UI")]
     [SerializeField] private GameObject correctFeedback;

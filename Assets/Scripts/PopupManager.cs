@@ -7,7 +7,7 @@ public class PopupManager : MonoBehaviour
     [SerializeField] private GameObject popupPanel;
     [SerializeField] private TextMeshProUGUI messageText;
     [SerializeField] private Button continueButton;
-    [SerializeField] private string welcomeMessage = "Welcome to the level! Get ready for your mission.";
+    [SerializeField] private string welcomeMessage = "Welcome to the level! You have 20 minutes to find all victims. Good luck!";
     
     private void Start()
     {
@@ -25,5 +25,10 @@ public class PopupManager : MonoBehaviour
     {
         popupPanel.SetActive(false);
         Time.timeScale = 1f; // Resume the game
+        // Initialize the timer in GameManager when the game starts
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.SetPaused(false);
+        }
     }
 }
