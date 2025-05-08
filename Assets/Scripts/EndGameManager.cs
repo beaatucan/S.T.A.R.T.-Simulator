@@ -40,8 +40,24 @@ public class EndGameManager : MonoBehaviour
 
     private void ReturnToMainMenu()
     {
+        // First reset the states
         if (ScoreManager.Instance != null)
-            ScoreManager.Instance.ResetScores();
+        {
+            ScoreManager.Instance.ResetCounters();
+        }
+        
+        if (GameManager.Instance != null)
+        {
+            GameManager.Instance.ResetGame();
+        }
+        
+        // Load the new scene
         SceneManager.LoadScene("StartMenu");
+        
+        // Destroy the instances after loading the new scene to ensure clean transition
+        if (ScoreManager.Instance != null)
+            Destroy(ScoreManager.Instance.gameObject);
+        if (GameManager.Instance != null)
+            Destroy(GameManager.Instance.gameObject);
     }
 }

@@ -3,47 +3,61 @@ using UnityEngine.SceneManagement;
 
 public class StartMenu : MonoBehaviour
 {
+    [SerializeField] private GameObject gameManagerPrefab;
+    [SerializeField] private GameObject scoreManagerPrefab;
+
+    private void InitializeManagers()
+    {
+        // Create GameManager if it doesn't exist
+        if (GameManager.Instance == null && gameManagerPrefab != null)
+        {
+            Instantiate(gameManagerPrefab);
+        }
+
+        // Create ScoreManager if it doesn't exist
+        if (ScoreManager.Instance == null && scoreManagerPrefab != null)
+        {
+            Instantiate(scoreManagerPrefab);
+        }
+    }
+
     public void StartGame()
     {
-        // Load the game scene (replace "GameScene" with your actual scene name)
         SceneManager.LoadScene("SelectLevel");
     }
 
     public void QuitGame()
     {
-        // Quit the application
-        Debug.Log("Quit Game"); // This will only show in the editor
+        Debug.Log("Quit Game");
         Application.Quit();
     }
 
     public void StartTutorial()
     {
-        // Load the game scene (replace "GameScene" with your actual scene name)
+        InitializeManagers();
         SceneManager.LoadScene("TutorialScene");
     }
 
     public void StartBack()
     {
-        // Load the options scene (replace "OptionsScene" with your actual scene name)
         SceneManager.LoadScene("StartMenu");
     }
 
     public void StartForest()
     {
-        // Load the options scene (replace "OptionsScene" with your actual scene name)
+        InitializeManagers();
         SceneManager.LoadScene("GameScene 1");
     }
 
     public void StartCave()
     {
-        // Load the options scene (replace "OptionsScene" with your actual scene name)
+        InitializeManagers();
         SceneManager.LoadScene("GameScene 2");
     }
 
     public void StartCastle()
     {
-        // Load the options scene (replace "OptionsScene" with your actual scene name)
+        InitializeManagers();
         SceneManager.LoadScene("GameScene 3");
     }
-
 }
