@@ -97,4 +97,19 @@ public class GameManager : MonoBehaviour
         InitializeTimer();
         SetPaused(false);
     }
+
+    public void ReplayGame()
+    {
+        // Reset the game state
+        ResetGame();
+
+        // Reset the score counters
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.ResetCounters();
+        }
+
+        // Reload the current scene to start fresh
+        SceneManager.LoadScene(SceneManager.GetActiveScene().name);
+    }
 }
