@@ -147,7 +147,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      PozaBilet_0: -4008100858823188307
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
