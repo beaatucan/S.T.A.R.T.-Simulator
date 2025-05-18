@@ -205,15 +205,30 @@ public class VitalSignsMenu : MonoBehaviour
             menuCanvasGroup.interactable = true;
             menuCanvasGroup.blocksRaycasts = true;
         }
-    }
-
-    private bool ColorMatches(Color a, Color b)
+    }    private bool ColorMatches(Color a, Color b)
     {
-        // Compare colors with a small tolerance for floating-point differences
-        const float tolerance = 0.01f;
-        return Mathf.Abs(a.r - b.r) < tolerance &&
-               Mathf.Abs(a.g - b.g) < tolerance &&
-               Mathf.Abs(a.b - b.b) < tolerance &&
-               Mathf.Abs(a.a - b.a) < tolerance;
+        // Log the exact RGBA values of both colors
+        Debug.Log($"Comparing colors - Selected: ({a.r:F4}, {a.g:F4}, {a.b:F4}, {a.a:F4}) vs " +
+                 $"Expected: ({b.r:F4}, {b.g:F4}, {b.b:F4}, {b.a:F4})");
+
+        // Calculate brightness for each color (luminance approximation)
+        float brightnessA = (a.r * 0.299f + a.g * 0.587f + a.b * 0.114f);
+        float brightnessB = (b.r * 0.299f + b.g * 0.587f + b.b * 0.114f);
+        
+        // Special case for black (deceased victims) - both colors are very dark
+        if (brightnessA < 0.08f && brightnessB < 0.08f)
+        {
+            Debug.Log($"Black color match detected - Brightness A: {brightnessA:F4}, B: {brightnessB:F4}");
+            return true;
+        }
+
+        // For other colors, compare with tolerance
+        const float tolerance = 0.05f;
+        bool matches = Mathf.Abs(a.r - b.r) < tolerance &&
+                       Mathf.Abs(a.g - b.g) < tolerance &&
+                       Mathf.Abs(a.b - b.b) < tolerance;
+
+        Debug.Log($"Color match result: {matches}");
+        return matches;
     }
 }
